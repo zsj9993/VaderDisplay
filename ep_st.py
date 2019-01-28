@@ -255,7 +255,6 @@ def main():
 
         # img_url = ''
         while True:  # Repeat until we get a valid image in the proper size
-            # TODO: fix_url() rather than just imgur
             img_post = random.choice(sfw_porn_list)
             img_url = fix_imgur(img_post.url)
             if is_good_image(img_url):
