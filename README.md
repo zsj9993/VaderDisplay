@@ -12,3 +12,8 @@ Fix: Update to Python 3
 Images slow to load
 
 Fix Pending
+
+## Future Plans
+1. Integrate with OpenShift to allow for other people to work on it and improve it.
+2. Set up configuration in which the actual program runs on a server and then the Pi just displays the output.
+
