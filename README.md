@@ -6,7 +6,9 @@ Clone the repo to a local repository, then run ep_st.py via the terminal. While 
 
 ## Known issues
 Unicode error because some characters are out of range.
+
 Fix: Update to Python 3
 
 Images slow to load
+
 Fix Pending
