@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="refresh" content="5">
+    <style>
+        html {
+            background: url( $img ) no-repeat center fixed;
+            background-size: cover;
+        }
+
+        #shadow {
+          position: absolute;
+          left: 5%; right: 5%;
+          background: rgba(0, 0, 0, 0.6);
+          bottom: 5%;
+        }
+
+        #text {
+          position: relative;
+        }
+
+        #text p {
+          text-align: center;
+          color: #FFF;
+          font-weight: bold;
+          font-size: 125%;
+        }
+    </style>
+</head>
+<body>
+    <div id="shadow">
+        <div id="text">
+            <p>$text</p>
+        </div>
+    </div>
+</body>
+</html>
