@@ -1,60 +1,28 @@
 # Inspirational Shitpost Generator
 # By: jackzachson (Zach Jackson)
+
 import random
 import requests
 import time
-import string
-import configparser
-import argparse
 import operator
 import logging
+import praw
+import config
 
+from flask import Flask, render_template
+from multiprocessing import Pool
+from requests import ReadTimeout
 from PIL import Image
 from io import BytesIO
-from imgurpython
-parser = argparse.ArgumentParser()
-parser.add_argument('-l', '--level')
-args = parser.parse_args()
-level = args.level
 
-# Config file stuff
-config = configparser.ConfigParser()
-config.read('ep_st.config')
+app = Flask(config.APP_NAME)
 
 # Open Reddit API
-r = praw.Reddit(config['DEFAULT']['appname'])
-
-# imgur API
-#imgur_id = config['IMGUR'].get('id')
-#imgur_secret = config['IMGUR'].get('secret')
-#imgur_client = ImgurClient(imgur_id, imgur_secret)
-
-# Number of posts to get
-num_posts = config['SUBREDDITS'].getint('numberposts', fallback=1000)
-
-# Minimum size of images
-min_width = config['IMAGES'].getint('minimumwidth', fallback=1920)
-min_height = config['IMAGES'].getint('minimumheight', fallback=1080)
-logic = config['IMAGES'].get('logic', fallback='and')
-
-# Paths to the files
-template_path = os.path.expanduser(config['FILEPATHS']['template'])
-
-# Temporary display file path while updating and testing
-display_path = os.path.expanduser(config['FILEPATHS']['display'])
-log_path = os.path.expanduser(config['FILEPATHS']['log'])
-
-# print(log_path)
-
-# Frequency to refresh lists of posts.
-list_refresh_rate = config['REFRESH'].getint('refreshrate', fallback=4) * 3600
-
-image_subs = config['SUBREDDITS']['imagesubs'].split(', ')
-text_subs = config['SUBREDDITS']['textsubs'].split(', ')
+r = praw.Reddit(user_agent=config.REDDIT_USER_AGENT, client_id=config.REDDIT_CLIENT_ID,
+                client_secret=config.REDDIT_CLIENT_SECRET)
 
 # logging config
-logging.basicConfig(filename=os.path.join(log_path, 'ep_st.log'),
-                    format='%(asctime)s - %(levelname)s - %(message)s',
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S')
 logger = logging.getLogger(__name__)
 log_levels = {'debug': logging.DEBUG,
@@ -63,17 +31,16 @@ log_levels = {'debug': logging.DEBUG,
               'error': logging.ERROR,
               'critical': logging.CRITICAL}
 
-if not level:  # if logging level was not set with an argument
-    level = config['LOGGING']['level'].lower()
-
 try:
-    logger.setLevel(log_levels[level])
+    logger.setLevel(log_levels[config.LOG_LEVEL])
 except KeyError:
     logger.setLevel(logging.INFO)
     logger.error('Invalid logging level, log level set to INFO')
     logger.info("Valid values: 'debug', 'info', 'warn', 'error', or 'critical'")
 
 logger.debug("Logging configuration complete")
+
+
 ################################################################################
 
 
@@ -86,10 +53,10 @@ def get_posts(sub):
     """
 
     logger.info('Getting posts from sub: {}'.format(sub))
-    s = r.get_subreddit(sub)
+    s = r.subreddit(sub)
     while True:  # Repeat until we don't get an error
         try:
-            p = s.get_top_from_month(limit=num_posts)
+            p = s.top(time_filter="month", limit=config.REDDIT_NUM_POSTS)
             break  # Exits the while loop once content is retrieved successfully
 
         # Had trouble with TypeError raised when connection is buffering too
@@ -137,7 +104,6 @@ def get_new_list(l):
     album_id = url.split('/')[-1]
     images = imgur_client.get_album_images(album_id=album_id)
     return random.choice(images).link'''
-
 
 '''def get_gallery_image(url):
      """Given an imgur gallery URL, returns a valid direct
@@ -239,48 +205,38 @@ def is_good_image(img_url):
            check_size(img_url)
 
 
-check_size = create_check_size(min_height, min_width, logic)
+check_size = create_check_size(config.IMAGE_MIN_HEIGHT, config.IMAGE_MIN_WIDTH, config.IMAGE_LOGIC)
 
 
-def main():
+@app.route("/")
+def index():
     logger.info('Script Start')
 
-    start_time = 0
+    sfw_porn_list = get_new_list(config.REDDIT_IMAGE_SUBS)
+    shower_thought_list = get_new_list(config.REDDIT_TEXT_SUB)
 
-    while True:  # Repeat forever.  Break with CTRL-C (on most systems)
-        if time.time() - start_time > list_refresh_rate:
-            sfw_porn_list = get_new_list(image_subs)
-            shower_thought_list = get_new_list(text_subs)
-            start_time = time.time()
+    # img_url = ''
+    while True:  # Repeat until we get a valid image in the proper size
+        img_post = random.choice(sfw_porn_list)
+        img_url = fix_imgur(img_post.url)
+        if is_good_image(img_url):
+            logger.debug('Image is from: {}'.format(img_post.url))
+            # download_image(img_url)
+            # want to get the subreddit a submission is from
+            break
 
-        # img_url = ''
-        while True:  # Repeat until we get a valid image in the proper size
-            img_post = random.choice(sfw_porn_list)
-            img_url = fix_imgur(img_post.url)
-            if is_good_image(img_url):
-                logger.debug('Image is from: {}'.format(img_post.url))
-                # download_image(img_url)
-                # want to get the subreddit a submission is from
-                break
+    witty_text = random.choice(shower_thought_list).title
+    # They're supposed to all be in the title
 
-        witty_text = random.choice(shower_thought_list).title
-        # They're supposed to all be in the title
+    txt_len = len(witty_text)
 
-        txt_len = len(witty_text)
+    if txt_len > 146:
+        middle = int(txt_len / 2)
+        split = witty_text[:middle].rfind(' ')
+        witty_text = witty_text[:split] + '<br>' + witty_text[split:]
 
-        if txt_len > 146:
-            middle = int(txt_len / 2)
-            split = witty_text[:middle].rfind(' ')
-            witty_text = witty_text[:split] + '<br>' + witty_text[split:]
-
-        with open(os.path.join(template_path, 'template.html'), 'r') as f:
-            template = string.Template(f.read())
-
-        with open(os.path.join(display_path, 'ep_st.html'), 'w') as f:
-            f.write(template.substitute(img=img_url, text=str(witty_text) ))
-
-        time.sleep(60)
+    return render_template('inspiration.html', img_url=img_url, text=witty_text)
 
 
 if __name__ == '__main__':
-    main()
+    app.run()
