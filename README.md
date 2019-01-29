@@ -4,16 +4,7 @@ This set of files allows for "inspirational shitposts" to be randomly generated 
 ## Installation and Use
 Clone the repo to a local repository, then run ep_st.py via the terminal. While leaving the terminal running in the background, navigate to and open the ep_st.html file and put into fullscreen mode. The script will run in the background with the current image displaying on screen.
 
-## Known issues
-Unicode error because some characters are out of range.
-
-Fix: Update to Python 3
-
-Images slow to load
-
-Fix Pending
-
 ## Future Plans
-1. Integrate with OpenShift to allow for other people to work on it and improve it.
-2. Set up configuration in which the actual program runs on a server and then the Pi just displays the output.
-
+~~1. Integrate with OpenShift to allow for other people to work on it and improve it.~~
+~~2. Set up configuration in which the actual program runs on a server and then the Pi just displays the output.~~
+3. Use Javascript to queue up images and pull the next one from the queue (removes most of the delay with rendering images and displaying them at the same time).
