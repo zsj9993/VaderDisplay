@@ -10,3 +10,12 @@ The program runs remotely on OpenShift. In order to install and make changes to 
 ~~2. Set up configuration in which the actual program runs on a server and then the Pi just displays the output.~~
 
 3. Use Javascript to queue up images and pull the next one from the queue (removes most of the delay with rendering images and displaying them at the same time).
+
+## What I Learned
+- How to use a Raspberry Pi and start it up from scratch
+- How to write a program in Python 2 and migrate it to Python 3
+- How to make and use a template and config file
+- How to host my project on OpenShift and display it remotely on a Pi
+- How to troubleshoot a program
+- How to parse an API
+- HOW TO ASK FOR HELP
