@@ -1,4 +1,4 @@
-# Inspirational Shitpost Generator
+# CUNT
 # By: jackzachson (Zach Jackson)
 
 import random
