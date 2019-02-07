@@ -56,7 +56,7 @@ def get_posts(sub):
     s = r.subreddit(sub)
     while True:  # Repeat until we don't get an error
         try:
-            p = s.top(time_filter="month", limit=config.REDDIT_NUM_POSTS)
+            p = s.top(time_filter="day", limit=config.REDDIT_NUM_POSTS)
             break  # Exits the while loop once content is retrieved successfully
 
         # Had trouble with TypeError raised when connection is buffering too
