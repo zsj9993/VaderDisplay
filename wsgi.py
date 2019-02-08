@@ -233,7 +233,7 @@ def index():
     if txt_len > 146:
         middle = int(txt_len / 2)
         split = witty_text[:middle].rfind(' ')
-        witty_text = witty_text[:split] + '<br>' + witty_text[split:]
+        witty_text = witty_text[:split] + witty_text[split:]
 
     return render_template('inspiration.html', img_url=img_url, text=witty_text)
 
