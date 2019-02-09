@@ -11,7 +11,8 @@ REDDIT_CLIENT_SECRET = env.get("EPST_REDDIT_CLIENT_SECRET")
 REDDIT_USER_AGENT = env.get("EPST_REDDIT_USER_AGENT", "inspirationalshitposts by /u/xx.zjackson")
 REDDIT_IMAGE_SUBS = [sub.strip() for sub in
                      env.get("EPST_REDDIT_IMAGE_SUBS", "earthporn,skyporn,lakeporn,ruralporn,spaceporn").split(",")]
-REDDIT_TEXT_SUB = [sub.strip() for sub in env.get("EPST_REDDIT_IMAGE_SUBS", "showerthoughts").split(",")]
+REDDIT_TEXT_SUB = [sub.strip() for sub in
+                   env.get("EPST_REDDIT_IMAGE_SUBS", "showerthoughts,highthoughts,3AMthoughts").split(",")]
 REDDIT_NUM_POSTS = int(env.get("EPST_REDDIT_NUM_POSTS", "1000"))
 
 # Valid values are 'debug', 'info', 'warn', 'error', or 'critical'
