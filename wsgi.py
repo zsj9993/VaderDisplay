@@ -8,6 +8,9 @@ import operator
 import logging
 import praw
 import config
+import json
+import urllib.request
+from bs4 import BeautifulSoup
 
 from flask import Flask, render_template
 from multiprocessing import Pool
@@ -208,34 +211,56 @@ def is_good_image(img_url):
 check_size = create_check_size(config.IMAGE_MIN_HEIGHT, config.IMAGE_MIN_WIDTH, config.IMAGE_LOGIC)
 
 
+def get_shitpostbot_twitter_post():
+    """Get a random tweet'd image from ShitPostBot5000 and return the url.
+    This is relativly repeat safe since ShitPostBot5000 tweets a lot, thus
+    we also don't have to go beyond the first page of tweets
+    """
+    try:
+        tweets_json = urllib.request.urlopen('https://twitter.com/i/profiles/show/shitpostbot5000/timeline/tweets?include_available_features=1&include_entities=1&reset_error_state=false').read()
+        tweets_data = json.loads(tweets_json)['items_html']
+        tweets_html = BeautifulSoup(tweets_data, 'html.parser')
+        tweets_list = tweets_html.find_all("div", attrs={'class','js-adaptive-photo'}) #only get the photos present on the timeline (shitpostbot only posts photos)
+        tweet_chosen = tweets_list[random.randint(0, len(tweets_list)-1)] #randomly get tweet
+        return tweet_chosen.find("img")['src']
+    except:
+        return None
+
 @app.route("/")
 def index():
     logger.info('Script Start')
 
-    sfw_porn_list = get_new_list(config.REDDIT_IMAGE_SUBS)
-    shower_thought_list = get_new_list(config.REDDIT_TEXT_SUB)
+    shitpostbot_img = get_shitpostbot_twitter_post()
+    #random coinflip for source
+    if random.randint(0,1) == 0 and shitpostbot_img is not None:
+        return render_template('inspiration.html', img_url=shitpostbot_img, text="")
 
-    # img_url = ''
-    while True:  # Repeat until we get a valid image in the proper size
-        img_post = random.choice(sfw_porn_list)
-        img_url = fix_imgur(img_post.url)
-        if is_good_image(img_url):
-            logger.debug('Image is from: {}'.format(img_post.url))
-            # download_image(img_url)
-            # want to get the subreddit a submission is from
-            break
+    #reddit source
+    else:
+        sfw_porn_list = get_new_list(config.REDDIT_IMAGE_SUBS)
+        shower_thought_list = get_new_list(config.REDDIT_TEXT_SUB)
 
-    witty_text = random.choice(shower_thought_list).title
-    # They're supposed to all be in the title
+        # img_url = ''
+        while True:  # Repeat until we get a valid image in the proper size
+            img_post = random.choice(sfw_porn_list)
+            img_url = fix_imgur(img_post.url)
+            if is_good_image(img_url):
+                logger.debug('Image is from: {}'.format(img_post.url))
+                # download_image(img_url)
+                # want to get the subreddit a submission is from
+                break
 
-    txt_len = len(witty_text)
+        witty_text = random.choice(shower_thought_list).title
+        # They're supposed to all be in the title
 
-    if txt_len > 146:
-        middle = int(txt_len / 2)
-        split = witty_text[:middle].rfind(' ')
-        witty_text = witty_text[:split] + witty_text[split:]
+        txt_len = len(witty_text)
 
-    return render_template('inspiration.html', img_url=img_url, text=witty_text)
+        if txt_len > 146:
+            middle = int(txt_len / 2)
+            split = witty_text[:middle].rfind(' ')
+            witty_text = witty_text[:split] + witty_text[split:]
+
+        return render_template('inspiration.html', img_url=img_url, text=witty_text)
 
 
 if __name__ == '__main__':
