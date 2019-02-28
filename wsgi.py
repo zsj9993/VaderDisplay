@@ -216,6 +216,7 @@ def get_shitpostbot_twitter_post():
     This is relativly repeat safe since ShitPostBot5000 tweets a lot, thus
     we also don't have to go beyond the first page of tweets
     """
+    logger.info("Getting tweets from shitpostbot5000")
     try:
         tweets_json = urllib.request.urlopen('https://twitter.com/i/profiles/show/shitpostbot5000/timeline/tweets?include_available_features=1&include_entities=1&reset_error_state=false').read()
         tweets_data = json.loads(tweets_json)['items_html']
@@ -224,6 +225,7 @@ def get_shitpostbot_twitter_post():
         tweet_chosen = tweets_list[random.randint(0, len(tweets_list)-1)] #randomly get tweet
         return tweet_chosen.find("img")['src']
     except:
+        logger.info("Bug getting shitpostbot5000 tweet")
         return None
 
 @app.route("/")
@@ -233,7 +235,7 @@ def index():
     shitpostbot_img = get_shitpostbot_twitter_post()
     #random coinflip for source
     if random.randint(0,1) == 0 and shitpostbot_img is not None:
-        return render_template('inspiration.html', img_url=shitpostbot_img, text="")
+        return render_template('shitpostbot.html', img_url=shitpostbot_img)
 
     #reddit source
     else:
