@@ -3,3 +3,4 @@ pillow
 Flask
 gunicorn
 praw
+beautifulsoup4
